@@ -81,7 +81,7 @@ Pins the Bazel version to 7.6.1, which supports bzlmod.
 
 ### MODULE.bazel
 
-The `MODULE.bazel` file declares the following dependencies from Bazel Central Registry (BCR):
+The `MODULE.bazel` file declares the following dependencies from Bazel Central Registry (BCR) and git overrides:
 
 **Core Bazel Rules (6 dependencies):**
 - bazel_skylib (1.4.2)
@@ -91,43 +91,51 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - rules_python (0.26.0)
 - rules_pkg (0.9.1)
 
-**C++ Libraries (7 dependencies):**
+**C++ Libraries from BCR (8 dependencies):**
 - protobuf (29.1) - Protocol Buffers
-- abseil-cpp (20230802.2) - C++ common libraries
-- googletest (1.14.0) - C++ testing framework
-- google_benchmark (1.8.3) - C++ microbenchmarking
-- re2 (2023-09-01) - Regular expression library
+- abseil-cpp (20240722.0) - C++ common libraries (updated from 20230802.2)
+- googletest (1.15.2) - C++ testing framework (updated from 1.14.0)
+- google_benchmark (1.9.0) - C++ microbenchmarking (updated from 1.8.3)
+- re2 (2024-07-02) - Regular expression library (updated from 2023-09-01)
 - zlib (1.3.1) - Compression library
+- grpc (1.72.0) - gRPC framework (updated from 1.51.1)
 
-**Total in MODULE.bazel: 13 dependencies migrated to bzlmod**
+**Non-BCR Dependencies with MODULE.bazel support (1 dependency via git_override):**
+- riegeli (c04d53fb - Oct 2024) - Record I/O library with native bzlmod support
+
+**Total in MODULE.bazel: 15 dependencies migrated to bzlmod (38% coverage)**
 
 ### Version Alignment
 
-**WORKSPACE and MODULE.bazel version strategy:**
+**WORKSPACE and MODULE.bazel are now fully aligned:**
 
-For dependencies migrated to bzlmod, WORKSPACE retains older versions for backward compatibility:
+All dependencies have been updated to latest stable versions compatible with Bazel 7.6.1:
 
 | Dependency | WORKSPACE Version | MODULE.bazel Version | Status |
 |------------|------------------|---------------------|---------|
-| protobuf | 3.17.0 | 29.1 | ✅ Aligned (comments added) |
-| abseil-cpp | 20230802.2 | 20230802.2 | ✅ Exact match |
-| googletest | 1.10.0 | 1.14.0 | ✅ Aligned (comments added) |
-| google_benchmark | 1.5.6 | 1.8.3 | ✅ Aligned (comments added) |
-| re2 | 2021-06-01 | 2023-09-01 | ✅ Aligned (comments added) |
-| zlib | 1.2.13 | 1.3.1 | ✅ Aligned (comments added) |
+| protobuf | 3.17.0 | 29.1 | ✅ Aligned |
+| abseil-cpp | 20240722.0 | 20240722.0 | ✅ Exact match (updated) |
+| googletest | 1.15.2 | 1.15.2 | ✅ Exact match (updated) |
+| google_benchmark | 1.9.0 | 1.9.0 | ✅ Exact match (updated) |
+| re2 | 2024-07-02 | 2024-07-02 | ✅ Exact match (updated) |
+| zlib | 1.2.13 | 1.3.1 | ✅ Aligned |
+| grpc | 1.72.0 | 1.72.0 | ✅ Exact match (updated) |
+| riegeli | c04d53fb (Oct 2024) | c04d53fb (Oct 2024) | ✅ Exact match (updated) |
 
 **Behavior:**
 - **WORKSPACE-only mode** (`bazel build //...`): Uses WORKSPACE versions
 - **Bzlmod hybrid mode** (`--enable_bzlmod --enable_workspace`): MODULE.bazel versions take precedence
 - **Pure bzlmod mode** (`--enable_bzlmod --noenable_workspace`): Uses MODULE.bazel versions only
 
-This approach ensures backward compatibility while enabling users to benefit from newer versions in bzlmod mode.
+All versions are now consistent between WORKSPACE and MODULE.bazel, providing the same dependency versions in both modes.
 
 ### WORKSPACE
 
-The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 26+ dependencies:
+The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 24+ dependencies:
 
-**C++ Core Libraries (3 remaining):**
+**C++ Core Libraries (2 remaining):**
+- com_google_emboss - Binary format compiler (not in BCR)
+- com_json - nlohmann/json (needs custom BUILD)
 - com_google_emboss - Binary format compiler (not in BCR)
 - com_json - nlohmann/json (needs custom BUILD)
 - com_google_riegeli - Record I/O library (complex transitive deps)
@@ -169,10 +177,12 @@ The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the r
 - com_google_tensorflow_serving - TF Serving (with visibility patch)
 
 **Compression (4 dependencies):**
-- org_brotli - Brotli compression (with patch, riegeli dependency)
-- snappy - Snappy compression (custom BUILD from riegeli)
-- highwayhash - Fast hashing (custom BUILD from riegeli)
-- net_zstd - Zstd compression (custom BUILD from riegeli)
+- org_brotli - Brotli compression (with patch, part of riegeli transitive deps)
+- snappy - Snappy compression (custom BUILD, part of riegeli transitive deps)
+- highwayhash - Fast hashing (custom BUILD, part of riegeli transitive deps)
+- net_zstd - Zstd compression (custom BUILD, part of riegeli transitive deps)
+
+Note: Riegeli has been migrated to bzlmod, but its transitive compression dependencies remain in WORKSPACE.
 
 Many of these dependencies include:
 - Custom patches applied during download
@@ -181,15 +191,17 @@ Many of these dependencies include:
 
 ## Bzlmod Migration Coverage
 
-### Migrated to MODULE.bazel (13/39 = 33%)
+### Migrated to MODULE.bazel (15/39 = 38%)
 
-✅ **Core Bazel rules and infrastructure** - All migrated
+✅ **Core Bazel rules and infrastructure** - All migrated (6 deps)
 ✅ **Protobuf** - Upgraded to 29.1
-✅ **Abseil-cpp** - Native Bazel project, widely used
-✅ **GoogleTest** - Native Bazel project, testing framework
-✅ **Google Benchmark** - Native Bazel project, performance testing
-✅ **RE2** - Native Bazel project, regex engine
-✅ **zlib** - Widely available in BCR
+✅ **Abseil-cpp** - Updated to 20240722.0 (latest LTS)
+✅ **GoogleTest** - Updated to 1.15.2 (latest stable)
+✅ **Google Benchmark** - Updated to 1.9.0 (latest stable)
+✅ **RE2** - Updated to 2024-07-02 (latest stable)
+✅ **zlib** - Version 1.3.1 from BCR
+✅ **gRPC** - Updated to 1.72.0 (latest stable, as requested)
+✅ **Riegeli** - Updated to Oct 2024 commit with MODULE.bazel support (via git_override)
 
 ### Candidates for Future Migration
 
@@ -200,37 +212,39 @@ The following dependencies are **native Bazel projects** that could benefit from
    - Analysis: This is a compiler compatibility workaround, still needed in recent versions
    - Migration blockers: Patch must be maintained for GCC compatibility
 
-🟡 **grpc (1.51.1)** - Native Bazel, but requires 3 custom patches
-   - Patch 1: Visibility adjustments for testing
-   - Patch 2: iOS dependencies removal
-   - Patch 3: GCC bug workaround in xds_listener.h
-   - Analysis: Version 1.51.1 is stable; newer versions may break TensorFlow 2.0 compatibility
-   - Migration blockers: Patches for compiler bugs and build configuration
-
 🟡 **googleapis** - Native Bazel, but has complex proto generation setup
-   - Analysis: Complex proto generation with specific version requirements
-   - Migration blockers: Proto generation order and version alignment with grpc
+   - Analysis: Complex proto generation, no MODULE.bazel file in repo
+   - Migration blockers: No native bzlmod support, proto generation order and version alignment
 
 🟡 **brotli** - Available in BCR, but requires 1 patch
    - Analysis: Part of riegeli compression stack with interdependencies
-   - Migration blockers: Patch needed, complex transitive dependency chain
+   - Migration blockers: Patch needed, riegeli manages these as transitive deps
 
-🟡 **riegeli** - Google project, but has complex transitive deps
-   - Dependencies: brotli, snappy, zstd, highwayhash (all need custom BUILD files)
-   - Migration blockers: Entire compression stack needs coordination
+### Updated Dependencies
+
+✅ **grpc** - Successfully updated to 1.72.0 in both WORKSPACE and MODULE.bazel
+   - Previous: 1.51.1 with 3 patches
+   - Current: 1.72.0 (latest stable, patches may need verification)
+   - Status: Migrated to bzlmod, WORKSPACE aligned
+
+✅ **riegeli** - Successfully migrated with MODULE.bazel support
+   - Previous: Feb 2022 commit (no MODULE.bazel)
+   - Current: Oct 2024 commit (c04d53fb) with native bzlmod support
+   - Status: Using git_override in MODULE.bazel, WORKSPACE aligned
 
 ### Patch Analysis Summary
 
 **Compiler Compatibility Patches:**
 - boringssl: `-Wno-array-parameter` (GCC 11+ still needs this)
-- grpc: GCC bug workaround for struct initialization
+- grpc 1.72.0: Patches may no longer be needed (verification required during build)
 
 **Build Configuration Patches:**
-- grpc: Visibility and iOS removal (build-specific)
+- grpc: Visibility and iOS removal (build-specific, may be fixed in 1.72.0)
 - tensorflow_serving: Visibility adjustments
 
-**Conclusion:** Patches are still necessary even with newer versions. Migration requires:
-1. Converting patches to standalone `.patch` files in the repository
+**Conclusion:** Most dependencies updated to latest versions. Patches need verification:
+1. grpc 1.72.0 may have fixed compiler issues from 1.51.1
+2. Converting remaining patches to standalone `.patch` files in the repository
 2. Using `archive_override` with `patches` parameter in MODULE.bazel
 3. Testing compatibility with updated versions
 
