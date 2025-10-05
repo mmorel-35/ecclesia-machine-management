@@ -4,11 +4,11 @@ This document describes the bzlmod setup for the Ecclesia Machine Management pro
 
 ## Overview
 
-As of Bazel 6.4.0, this project supports both traditional WORKSPACE mode and the new bzlmod (Bazel Module) system. Both modes are fully functional for building the project.
+As of Bazel 7.6.1, this project supports both traditional WORKSPACE mode and the new bzlmod (Bazel Module) system. Both modes are fully functional for building the project.
 
 ## Requirements
 
-- Bazel 6.4.0 or later (specified in `.bazelversion`)
+- Bazel 7.6.1 or later (specified in `.bazelversion`)
 - Both `WORKSPACE` and `MODULE.bazel` files are present in the repository
 
 ## Build Modes
@@ -75,7 +75,7 @@ The `.bazelrc` file documents the different modes and can be configured to chang
 
 ### .bazelversion
 
-Pins the Bazel version to 6.4.0, which supports bzlmod.
+Pins the Bazel version to 7.6.1, which supports bzlmod.
 
 ## Dependencies
 
@@ -136,7 +136,7 @@ To achieve full bzlmod support without WORKSPACE:
 If you encounter issues with bzlmod mode:
 1. Try hybrid mode: `bazel build --enable_bzlmod --enable_workspace //...`
 2. Fall back to WORKSPACE mode: `bazel build --noenable_bzlmod //...`
-3. Check that `.bazelversion` is set to 6.4.0 or later
+3. Check that `.bazelversion` is set to 7.6.1 or later
 
 ### Missing dependencies
 

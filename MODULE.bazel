@@ -38,8 +38,9 @@ A full bzlmod-only migration would require:
 """
 
 module(
-    name = "com_google_ecclesia",
+    name = "ecclesia-machine-management",
     version = "1.0",
+    repo_name = "com_google_ecclesia",
 )
 
 # ============================================================================
@@ -53,6 +54,9 @@ bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "rules_python", version = "0.26.0")
 bazel_dep(name = "rules_pkg", version = "0.9.1")
 
+# Protocol Buffers - using version 29.1 which is compatible with Bazel 7.x
+bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
+
 # Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -63,13 +67,15 @@ python.toolchain(
 # Project Dependencies
 # ============================================================================
 # 
+# Protobuf is now declared above via bazel_dep (version 29.1).
+#
 # The following dependencies are defined in WORKSPACE via deps_first.bzl
 # and deps_second.bzl. They will be available when using hybrid mode
 # (--enable_bzlmod --enable_workspace):
 #
 # C++ Core:
 #   - com_google_absl (20230802.2)
-#   - com_google_protobuf (3.17.0)
+#   - com_google_protobuf (3.17.0) - Note: In bzlmod mode, version 29.1 is used
 #   - com_google_googletest (1.10.0)
 #   - com_github_google_benchmark (1.5.6)
 #   - com_google_emboss

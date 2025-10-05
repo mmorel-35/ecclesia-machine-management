@@ -34,8 +34,8 @@ BAZEL_VERSION=$(bazel --version | grep -oP '(?<=bazel )[0-9.]+' || echo "unknown
 echo "  Bazel version: $BAZEL_VERSION"
 
 # Check required version
-REQUIRED_MAJOR=6
-REQUIRED_MINOR=4
+REQUIRED_MAJOR=7
+REQUIRED_MINOR=6
 
 ACTUAL_MAJOR=$(echo $BAZEL_VERSION | cut -d. -f1)
 ACTUAL_MINOR=$(echo $BAZEL_VERSION | cut -d. -f2)

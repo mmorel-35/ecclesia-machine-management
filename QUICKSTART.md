@@ -4,7 +4,7 @@ This is a quick reference for building with bzlmod. For complete documentation, 
 
 ## Prerequisites
 
-- Bazel 6.4.0+ (see `.bazelversion`)
+- Bazel 7.6.1+ (see `.bazelversion`)
 
 ## Building
 
@@ -27,7 +27,7 @@ Run the test script to verify both modes work:
 
 ## Key Files
 
-- `.bazelversion` - Bazel version (6.4.0)
+- `.bazelversion` - Bazel version (7.6.1)
 - `WORKSPACE` - Traditional dependency management (default)
 - `MODULE.bazel` - Bzlmod dependency declarations
 - `.bazelrc` - Build configuration

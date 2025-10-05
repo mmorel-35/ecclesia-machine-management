@@ -11,7 +11,7 @@ This project uses [Bazel](https://bazel.build/) for building.
 
 ### Requirements
 
-- Bazel 6.4.0 or later (see `.bazelversion`)
+- Bazel 7.6.1 or later (see `.bazelversion`)
 
 ### Build Modes
 
