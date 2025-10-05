@@ -81,7 +81,7 @@ Pins the Bazel version to 7.6.1, which supports bzlmod.
 
 ### MODULE.bazel
 
-The `MODULE.bazel` file declares the following dependencies from Bazel Central Registry (BCR) and git overrides:
+The `MODULE.bazel` file declares the following dependencies from Bazel Central Registry (BCR):
 
 **Core Bazel Rules (6 dependencies):**
 - bazel_skylib (1.4.2)
@@ -91,7 +91,7 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - rules_python (0.26.0)
 - rules_pkg (0.9.1)
 
-**C++ Libraries from BCR (8 dependencies):**
+**C++ Libraries from BCR (10 dependencies):**
 - protobuf (29.1) - Protocol Buffers
 - abseil-cpp (20240722.0) - C++ common libraries (updated from 20230802.2)
 - googletest (1.15.2) - C++ testing framework (updated from 1.14.0)
@@ -99,11 +99,10 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - re2 (2024-07-02) - Regular expression library (updated from 2023-09-01)
 - zlib (1.3.1) - Compression library
 - grpc (1.72.0) - gRPC framework (updated from 1.51.1)
+- boringssl (0.0.0-20241126-22e0364) - SSL/TLS library with C++17 support (eliminates -Wno-array-parameter patch)
+- riegeli (0.0.0-20241126-f9ae69a) - Record I/O library (now from BCR, previously git_override)
 
-**Non-BCR Dependencies with MODULE.bazel support (1 dependency via git_override):**
-- riegeli (c04d53fb - Oct 2024) - Record I/O library with native bzlmod support
-
-**Total in MODULE.bazel: 15 dependencies migrated to bzlmod (38% coverage)**
+**Total in MODULE.bazel: 17 dependencies migrated to bzlmod (44% coverage)**
 
 ### Version Alignment
 
@@ -120,7 +119,8 @@ All dependencies have been updated to latest stable versions compatible with Baz
 | re2 | 2024-07-02 | 2024-07-02 | ✅ Exact match (updated) |
 | zlib | 1.2.13 | 1.3.1 | ✅ Aligned |
 | grpc | 1.72.0 | 1.72.0 | ✅ Exact match (updated) |
-| riegeli | c04d53fb (Oct 2024) | c04d53fb (Oct 2024) | ✅ Exact match (updated) |
+| boringssl | 9b7498d5 (old) | 0.0.0-20241126 | ✅ Aligned (BCR with C++17) |
+| riegeli | c04d53fb (Oct 2024) | 0.0.0-20241126 | ✅ Aligned (BCR) |
 
 **Behavior:**
 - **WORKSPACE-only mode** (`bazel build //...`): Uses WORKSPACE versions
@@ -131,7 +131,7 @@ All versions are now consistent between WORKSPACE and MODULE.bazel, providing th
 
 ### WORKSPACE
 
-The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 24+ dependencies:
+The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 22+ dependencies:
 
 **C++ Core Libraries (2 remaining):**
 - com_google_emboss - Binary format compiler (not in BCR)
@@ -191,7 +191,7 @@ Many of these dependencies include:
 
 ## Bzlmod Migration Coverage
 
-### Migrated to MODULE.bazel (15/39 = 38%)
+### Migrated to MODULE.bazel (17/39 = 44%)
 
 ✅ **Core Bazel rules and infrastructure** - All migrated (6 deps)
 ✅ **Protobuf** - Upgraded to 29.1
@@ -201,16 +201,12 @@ Many of these dependencies include:
 ✅ **RE2** - Updated to 2024-07-02 (latest stable)
 ✅ **zlib** - Version 1.3.1 from BCR
 ✅ **gRPC** - Updated to 1.72.0 (latest stable, as requested)
-✅ **Riegeli** - Updated to Oct 2024 commit with MODULE.bazel support (via git_override)
+✅ **BoringSSL** - Version 0.0.0-20241126 from BCR with C++17 support (eliminates patch need)
+✅ **Riegeli** - Version 0.0.0-20241126 from BCR (previously git_override)
 
 ### Candidates for Future Migration
 
-The following dependencies are **native Bazel projects** that could benefit from bzlmod migration but remain in WORKSPACE due to patches or version constraints:
-
-🟡 **boringssl** - Native Bazel, but requires 1 custom patch
-   - Patch: `-Wno-array-parameter` compiler flag for GCC 11+
-   - Analysis: This is a compiler compatibility workaround, still needed in recent versions
-   - Migration blockers: Patch must be maintained for GCC compatibility
+The following dependencies are **native Bazel projects** that could benefit from bzlmod migration but remain in WORKSPACE due to constraints:
 
 🟡 **googleapis** - Native Bazel, but has complex proto generation setup
    - Analysis: Complex proto generation, no MODULE.bazel file in repo
@@ -227,24 +223,31 @@ The following dependencies are **native Bazel projects** that could benefit from
    - Current: 1.72.0 (latest stable, patches may need verification)
    - Status: Migrated to bzlmod, WORKSPACE aligned
 
-✅ **riegeli** - Successfully migrated with MODULE.bazel support
-   - Previous: Feb 2022 commit (no MODULE.bazel)
-   - Current: Oct 2024 commit (c04d53fb) with native bzlmod support
-   - Status: Using git_override in MODULE.bazel, WORKSPACE aligned
+✅ **boringssl** - Successfully migrated to BCR with C++17 support
+   - Previous: Old commit with -Wno-array-parameter patch
+   - Current: 0.0.0-20241126-22e0364 from BCR
+   - Status: BCR version handles C++17 properly, eliminating patch need
+
+✅ **riegeli** - Successfully migrated to BCR
+   - Previous: Oct 2024 commit via git_override
+   - Current: 0.0.0-20241126-f9ae69a from BCR
+   - Status: Using official BCR version instead of git_override
 
 ### Patch Analysis Summary
 
-**Compiler Compatibility Patches:**
-- boringssl: `-Wno-array-parameter` (GCC 11+ still needs this)
+**Compiler Compatibility:**
+- ~~boringssl: -Wno-array-parameter~~ **✅ RESOLVED** - BCR version with C++17 support eliminates patch need
 - grpc 1.72.0: Patches may no longer be needed (verification required during build)
 
-**Build Configuration Patches:**
+**Build Configuration:**
 - grpc: Visibility and iOS removal (build-specific, may be fixed in 1.72.0)
 - tensorflow_serving: Visibility adjustments
 
-**Conclusion:** Most dependencies updated to latest versions. Patches need verification:
-1. grpc 1.72.0 may have fixed compiler issues from 1.51.1
-2. Converting remaining patches to standalone `.patch` files in the repository
+**Conclusion:** Major progress on dependency migration:
+1. boringssl now uses BCR version with proper C++17 support (patch eliminated)
+2. riegeli now uses official BCR version (cleaner than git_override)
+3. grpc 1.72.0 may have fixed compiler issues from 1.51.1
+4. Remaining patches need verification during build
 2. Using `archive_override` with `patches` parameter in MODULE.bazel
 3. Testing compatibility with updated versions
 

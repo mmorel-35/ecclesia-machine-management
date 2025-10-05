@@ -142,6 +142,10 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("boringssl"):
+        # BoringSSL - SSL/TLS library. 
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20241126-22e0364
+        # from BCR which handles C++17 properly, eliminating the need for -Wno-array-parameter patch.
+        # This WORKSPACE version is kept for WORKSPACE-only mode compatibility.
         # Needs to come before grpc_deps() to be respected.
         patch_files = [
             "01.no_array_parameter.patch",
@@ -426,7 +430,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
 
     if not native.existing_rule("com_google_riegeli"):
         # Riegeli. Updated to latest commit with MODULE.bazel support (Oct 2024).
-        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel git_override.
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20241126-f9ae69a
+        # from BCR (Bazel Central Registry). This WORKSPACE version is kept for fallback.
         http_archive(
             name = "com_google_riegeli",
             strip_prefix = "riegeli-c04d53fb1d936d6bca5886af9ba0c1bddc66bc74",
