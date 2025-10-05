@@ -57,6 +57,25 @@ bazel_dep(name = "rules_pkg", version = "0.9.1")
 # Protocol Buffers - using version 29.1 which is compatible with Bazel 7.x
 bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
 
+# ============================================================================
+# C++ Core Libraries - Native Bazel projects available in BCR
+# ============================================================================
+
+# Abseil - C++ common libraries
+bazel_dep(name = "abseil-cpp", version = "20230802.2", repo_name = "com_google_absl")
+
+# GoogleTest - C++ testing framework
+bazel_dep(name = "googletest", version = "1.14.0", repo_name = "com_google_googletest")
+
+# Google Benchmark - C++ microbenchmarking library
+bazel_dep(name = "google_benchmark", version = "1.8.3", repo_name = "com_github_google_benchmark")
+
+# RE2 - Regular expression library
+bazel_dep(name = "re2", version = "2023-09-01", repo_name = "com_googlesource_code_re2")
+
+# zlib - Compression library
+bazel_dep(name = "zlib", version = "1.3.1")
+
 # Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -67,64 +86,60 @@ python.toolchain(
 # Project Dependencies
 # ============================================================================
 # 
-# Protobuf is now declared above via bazel_dep (version 29.1).
+# The following dependencies are now declared via bazel_dep above:
+#   ✓ protobuf (29.1) - Protocol Buffers
+#   ✓ abseil-cpp (20230802.2) - C++ common libraries
+#   ✓ googletest (1.14.0) - C++ testing framework
+#   ✓ google_benchmark (1.8.3) - C++ microbenchmarking
+#   ✓ re2 (2023-09-01) - Regular expression library
+#   ✓ zlib (1.3.1) - Compression library
 #
 # The following dependencies are defined in WORKSPACE via deps_first.bzl
 # and deps_second.bzl. They will be available when using hybrid mode
 # (--enable_bzlmod --enable_workspace):
 #
-# C++ Core:
-#   - com_google_absl (20230802.2)
-#   - com_google_protobuf (3.17.0) - Note: In bzlmod mode, version 29.1 is used
-#   - com_google_googletest (1.10.0)
-#   - com_github_google_benchmark (1.5.6)
-#   - com_google_emboss
-#   - com_googlesource_code_re2 (2021-06-01)
-#   - com_json
-#   - com_google_riegeli
+# C++ Core (remaining in WORKSPACE):
+#   - com_google_emboss (not in BCR)
+#   - com_json (nlohmann/json - needs custom BUILD)
+#   - com_google_riegeli (complex transitive deps)
 #
 # Networking:
 #   - boringssl (with no_array_parameter patch)
 #   - com_github_grpc_grpc (1.51.1 with 3 patches)
-#   - com_google_googleapis
+#   - com_google_googleapis (complex proto setup)
 #
 # Build rules:
-#   - com_github_nelhage_rules_boost
-#   - build_bazel_rules_swift
-#   - io_bazel_rules_closure
+#   - com_github_nelhage_rules_boost (not in BCR)
+#   - build_bazel_rules_swift (old version)
+#   - io_bazel_rules_closure (old version)
 #
 # System libraries:
-#   - com_github_libevent_libevent
-#   - zlib (1.2.13)
-#   - ncurses
-#   - libedit
-#   - curl
-#   - jansson
+#   - com_github_libevent_libevent (needs custom BUILD)
+#   - ncurses, libedit, curl, jansson (need custom BUILD files)
 #
 # Messaging:
 #   - libsodium (with version_h patch)
 #   - zeromq (with platform_hpp patch)
-#   - cppzmq
+#   - cppzmq (needs custom BUILD)
 #
 # Python:
-#   - com_google_absl_py
-#   - six_archive
-#   - jinja2 (custom BUILD)
-#   - markupsafe (custom BUILD)
+#   - com_google_absl_py (not migrated yet)
+#   - six_archive (legacy Python 2/3 compatibility)
+#   - jinja2, markupsafe (need custom BUILD files)
 #
 # Redfish:
 #   - redfishMockupServer (with 12 patches)
-#   - public_redfish_schema
+#   - public_redfish_schema (custom download/extraction)
 #
 # TensorFlow:
-#   - org_tensorflow (2.0.0-rc0)
+#   - org_tensorflow (2.0.0-rc0 - complex deps)
 #   - com_google_tensorflow_serving (with visibility patch)
 #
-# Compression:
-#   - org_brotli
-#   - snappy
-#   - highwayhash
-#   - net_zstd
+# Compression (remaining in WORKSPACE):
+#   - org_brotli (with patch, complex riegeli dependency)
+#   - snappy (custom BUILD from riegeli)
+#   - highwayhash (custom BUILD from riegeli)
+#   - net_zstd (custom BUILD from riegeli)
 #
 # For full dependency details, see:
 #   - ecclesia/build_defs/deps_first.bzl
