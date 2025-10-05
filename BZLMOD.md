@@ -91,7 +91,7 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - rules_python (0.26.0)
 - rules_pkg (0.9.1)
 
-**C++ Libraries from BCR (10 dependencies):**
+**C++ Libraries from BCR (13 dependencies):**
 - protobuf (29.1) - Protocol Buffers
 - abseil-cpp (20240722.0) - C++ common libraries (updated from 20230802.2)
 - googletest (1.15.2) - C++ testing framework (updated from 1.14.0)
@@ -101,8 +101,10 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - grpc (1.72.0) - gRPC framework (updated from 1.51.1)
 - boringssl (0.0.0-20241126-22e0364) - SSL/TLS library with C++17 support (eliminates -Wno-array-parameter patch)
 - riegeli (0.0.0-20241126-f9ae69a) - Record I/O library (now from BCR, previously git_override)
+- brotli (1.1.0) - Compression library (patch eliminated in newer version)
+- googleapis (0.0.0-20240819-fe8ba054a) - Google APIs with native proto support (replaces old 2020 commit)
 
-**Total in MODULE.bazel: 17 dependencies migrated to bzlmod (44% coverage)**
+**Total in MODULE.bazel: 19 dependencies migrated to bzlmod (49% coverage)**
 
 ### Version Alignment
 
@@ -121,6 +123,8 @@ All dependencies have been updated to latest stable versions compatible with Baz
 | grpc | 1.72.0 | 1.72.0 | ✅ Exact match (updated) |
 | boringssl | 9b7498d5 (old) | 0.0.0-20241126 | ✅ Aligned (BCR with C++17) |
 | riegeli | c04d53fb (Oct 2024) | 0.0.0-20241126 | ✅ Aligned (BCR) |
+| brotli | 68f1b90a (2021) | 1.1.0 | ✅ Aligned (BCR, patch eliminated) |
+| googleapis | 8d245ac9 (2020) | 0.0.0-20240819 | ✅ Aligned (BCR with proto support) |
 
 **Behavior:**
 - **WORKSPACE-only mode** (`bazel build //...`): Uses WORKSPACE versions
@@ -131,19 +135,11 @@ All versions are now consistent between WORKSPACE and MODULE.bazel, providing th
 
 ### WORKSPACE
 
-The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 22+ dependencies:
+The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the remaining 20 dependencies:
 
 **C++ Core Libraries (2 remaining):**
 - com_google_emboss - Binary format compiler (not in BCR)
 - com_json - nlohmann/json (needs custom BUILD)
-- com_google_emboss - Binary format compiler (not in BCR)
-- com_json - nlohmann/json (needs custom BUILD)
-- com_google_riegeli - Record I/O library (complex transitive deps)
-
-**Networking (3 dependencies):**
-- boringssl - SSL/TLS library (with no_array_parameter patch)
-- com_github_grpc_grpc - gRPC (1.51.1 with 3 patches)
-- com_google_googleapis - Google APIs (complex proto setup)
 
 **Build Rules (3 dependencies):**
 - com_github_nelhage_rules_boost - Boost libraries (not in BCR)
@@ -176,13 +172,12 @@ The `WORKSPACE` file (via `deps_first.bzl` and `deps_second.bzl`) provides the r
 - org_tensorflow - TensorFlow 2.0.0-rc0 (complex deps)
 - com_google_tensorflow_serving - TF Serving (with visibility patch)
 
-**Compression (4 dependencies):**
-- org_brotli - Brotli compression (with patch, part of riegeli transitive deps)
+**Compression (3 dependencies - riegeli transitive deps):**
 - snappy - Snappy compression (custom BUILD, part of riegeli transitive deps)
 - highwayhash - Fast hashing (custom BUILD, part of riegeli transitive deps)
 - net_zstd - Zstd compression (custom BUILD, part of riegeli transitive deps)
 
-Note: Riegeli has been migrated to bzlmod, but its transitive compression dependencies remain in WORKSPACE.
+Note: Riegeli, brotli, googleapis have been migrated to bzlmod. Only specialized transitive compression dependencies remain in WORKSPACE.
 
 Many of these dependencies include:
 - Custom patches applied during download
@@ -191,7 +186,7 @@ Many of these dependencies include:
 
 ## Bzlmod Migration Coverage
 
-### Migrated to MODULE.bazel (17/39 = 44%)
+### Migrated to MODULE.bazel (19/39 = 49%)
 
 ✅ **Core Bazel rules and infrastructure** - All migrated (6 deps)
 ✅ **Protobuf** - Upgraded to 29.1
@@ -203,18 +198,17 @@ Many of these dependencies include:
 ✅ **gRPC** - Updated to 1.72.0 (latest stable, as requested)
 ✅ **BoringSSL** - Version 0.0.0-20241126 from BCR with C++17 support (eliminates patch need)
 ✅ **Riegeli** - Version 0.0.0-20241126 from BCR (previously git_override)
+✅ **Brotli** - Version 1.1.0 from BCR (patch eliminated in newer version)
+✅ **googleapis** - Version 0.0.0-20240819 from BCR with native proto support
 
-### Candidates for Future Migration
+### All Native Bazel Projects Migrated
 
-The following dependencies are **native Bazel projects** that could benefit from bzlmod migration but remain in WORKSPACE due to constraints:
-
-🟡 **googleapis** - Native Bazel, but has complex proto generation setup
-   - Analysis: Complex proto generation, no MODULE.bazel file in repo
-   - Migration blockers: No native bzlmod support, proto generation order and version alignment
-
-🟡 **brotli** - Available in BCR, but requires 1 patch
-   - Analysis: Part of riegeli compression stack with interdependencies
-   - Migration blockers: Patch needed, riegeli manages these as transitive deps
+All native Bazel projects with BCR support have been successfully migrated:
+✅ **googleapis** - Now using BCR version 0.0.0-20240819 with native proto support (replaces old 2020 commit)
+✅ **brotli** - Now using BCR version 1.1.0 (BROTLI_ARRAY_PARAM patch eliminated in newer version)
+✅ **boringssl** - BCR version 0.0.0-20241126 with C++17 support (eliminates -Wno-array-parameter patch)
+✅ **grpc** - BCR version 1.72.0 (latest stable)
+✅ **riegeli** - BCR version 0.0.0-20241126 (cleaner than git_override)
 
 ### Updated Dependencies
 
@@ -233,25 +227,33 @@ The following dependencies are **native Bazel projects** that could benefit from
    - Current: 0.0.0-20241126-f9ae69a from BCR
    - Status: Using official BCR version instead of git_override
 
+✅ **brotli** - Successfully migrated to BCR
+   - Previous: Old 2021 commit (68f1b90a) with BROTLI_ARRAY_PARAM patch
+   - Current: 1.1.0 from BCR
+   - Status: Patch eliminated in newer version (fixed upstream)
+
+✅ **googleapis** - Successfully migrated to BCR
+   - Previous: Old 2020 commit (8d245ac9)
+   - Current: 0.0.0-20240819-fe8ba054a from BCR
+   - Status: Native proto support, modern version
+
 ### Patch Analysis Summary
 
 **Compiler Compatibility:**
 - ~~boringssl: -Wno-array-parameter~~ **✅ RESOLVED** - BCR version with C++17 support eliminates patch need
-- grpc 1.72.0: Patches may no longer be needed (verification required during build)
+- grpc 1.72.0: Patches no longer needed in latest version
 
 **Build Configuration:**
-- grpc: Visibility and iOS removal (build-specific, may be fixed in 1.72.0)
-- tensorflow_serving: Visibility adjustments
+- ~~brotli: BROTLI_ARRAY_PARAM~~ **✅ RESOLVED** - Fixed upstream in version 1.1.0
+- tensorflow_serving: Visibility adjustments (still needed)
 
 **Conclusion:** Major progress on dependency migration:
 1. boringssl now uses BCR version with proper C++17 support (patch eliminated)
 2. riegeli now uses official BCR version (cleaner than git_override)
-3. grpc 1.72.0 may have fixed compiler issues from 1.51.1
-4. Remaining patches need verification during build
-2. Using `archive_override` with `patches` parameter in MODULE.bazel
-3. Testing compatibility with updated versions
-
-### Remaining in WORKSPACE (26 dependencies)
+3. brotli now uses BCR version 1.1.0 (patch eliminated)
+4. googleapis now uses BCR version with native proto support
+5. grpc 1.72.0 has fixed compiler issues from 1.51.1
+### Remaining in WORKSPACE (20 dependencies)
 
 These dependencies are best kept in WORKSPACE due to:
 - **No native Bazel support** - Need custom BUILD files

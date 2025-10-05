@@ -133,7 +133,10 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_googleapis"):
-        # Google APIs. Latest commit as of Nov 16, 2020.
+        # Google APIs. 
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20240819-fe8ba054a
+        # from BCR with native proto support. This WORKSPACE version is kept for WORKSPACE-only mode.
+        # Latest commit as of Nov 16, 2020 (outdated, bzlmod uses newer version).
         http_archive(
             name = "com_google_googleapis",
             sha256 = "979859a238e6626850fee33d30f4240e90e71009786a55a15134df582dbc2dbe",
@@ -439,6 +442,10 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("org_brotli"):
+        # Brotli compression library.
+        # Note: When using bzlmod mode, MODULE.bazel provides version 1.1.0 from BCR
+        # which eliminates the need for BROTLI_ARRAY_PARAM patch (fixed in newer versions).
+        # This WORKSPACE version is kept for WORKSPACE-only mode compatibility.
         # Additional projects needed by riegeli.
         patch_files = ["brotli.patch"]
         http_archive(

@@ -91,6 +91,18 @@ bazel_dep(name = "boringssl", version = "0.0.0-20241126-22e0364")
 # Previously used git_override, but BCR versions are now available
 bazel_dep(name = "riegeli", version = "0.0.0-20241126-f9ae69a", repo_name = "com_google_riegeli")
 
+# Brotli - Compression library (now from BCR)
+# BCR version eliminates need for BROTLI_ARRAY_PARAM patch that was required in older versions
+bazel_dep(name = "brotli", version = "1.1.0", repo_name = "org_brotli")
+
+# ============================================================================
+# Google APIs
+# ============================================================================
+
+# googleapis - Google API definitions
+# Using latest version from BCR with proto support
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", repo_name = "com_google_googleapis")
+
 # Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -111,6 +123,8 @@ python.toolchain(
 #   ✓ grpc (1.72.0) - gRPC framework (updated from 1.51.1)
 #   ✓ boringssl (0.0.0-20241126-22e0364) - SSL/TLS library with C++17 support from BCR
 #   ✓ riegeli (0.0.0-20241126-f9ae69a) - Record I/O library from BCR (previously git_override)
+#   ✓ brotli (1.1.0) - Compression library from BCR (patch eliminated)
+#   ✓ googleapis (0.0.0-20240819-fe8ba054a) - Google APIs from BCR
 #
 # Note: WORKSPACE versions are updated to match MODULE.bazel for consistency.
 # When bzlmod is enabled, MODULE.bazel versions take precedence.
@@ -123,11 +137,7 @@ python.toolchain(
 #   - com_google_emboss (not in BCR)
 #   - com_json (nlohmann/json - needs custom BUILD)
 #
-# Networking (require patches or complex setup):
-#   - com_google_googleapis (complex proto setup, no MODULE.bazel support)
-#   
-#   Analysis: These dependencies require custom configuration.
-#   - googleapis: Complex proto generation, no MODULE.bazel file in repo
+# Analysis: Most networking dependencies are now migrated to bzlmod
 #
 # Build rules:
 #   - com_github_nelhage_rules_boost (not in BCR)
@@ -156,8 +166,8 @@ python.toolchain(
 #   - org_tensorflow (2.0.0-rc0 - complex deps)
 #   - com_google_tensorflow_serving (with visibility patch)
 #
-# Compression (remaining in WORKSPACE):
-#   - org_brotli (with patch, complex riegeli dependency)
+# Compression (some migrated to bzlmod):
+#   ✓ org_brotli - Migrated to BCR 1.1.0 (patch eliminated in newer version)
 #   - snappy (custom BUILD from riegeli)
 #   - highwayhash (custom BUILD from riegeli)
 #   - net_zstd (custom BUILD from riegeli)
