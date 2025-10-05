@@ -1,0 +1,71 @@
+"""Ecclesia Machine Management bzlmod configuration.
+
+This MODULE.bazel provides basic bzlmod support while maintaining full 
+compatibility with the existing WORKSPACE setup.
+
+IMPORTANT: This project has many dependencies with custom patches and build files
+that are defined in WORKSPACE (via deps_first.bzl and deps_second.bzl). 
+
+In hybrid mode (Bazel 6+), MODULE.bazel and WORKSPACE coexist:
+- When bzlmod is DISABLED (default): Only WORKSPACE is used
+- When bzlmod is ENABLED: MODULE.bazel dependencies are available, and
+  WORKSPACE dependencies that don't conflict are also available
+
+For full functionality, we recommend continuing to use WORKSPACE mode until
+all dependencies can be migrated to bzlmod.
+"""
+
+module(
+    name = "com_google_ecclesia",
+    version = "1.0",
+)
+
+# Core Bazel rules available in Bazel Central Registry (BCR)
+# These provide a foundation for bzlmod-based builds
+
+# Skylib - utility functions for Bazel
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
+
+# Platform definitions
+bazel_dep(name = "platforms", version = "0.0.8")
+
+# C++ build rules
+bazel_dep(name = "rules_cc", version = "0.0.9")
+
+# Python support
+bazel_dep(name = "rules_python", version = "0.26.0")
+
+# Configure Python toolchain
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+
+# Package/distribution rules
+bazel_dep(name = "rules_pkg", version = "0.9.1")
+
+# Protocol buffers and gRPC
+bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
+
+# NOTE: The following core dependencies are intentionally NOT included here
+# because they require specific versions with custom patches in WORKSPACE:
+# - protobuf (3.17.0 vs BCR's 21.7+)
+# - abseil-cpp (20230802.2 specific version)
+# - googletest (1.10.0 vs BCR's 1.14.0+)
+# - grpc (1.51.1 with 3 custom patches)
+# - boringssl (with custom patch)
+# - And 30+ other dependencies with custom BUILD files or patches
+
+# To use these dependencies in bzlmod mode, they would need to be added
+# with archive_override or git_override directives here, but patches
+# would need to be converted to patch_files format.
+
+# For now, the recommended approach is:
+# 1. Use WORKSPACE mode (--noenable_bzlmod, the default) for full compatibility
+# 2. Use bzlmod mode (--enable_bzlmod) for testing future migration
+
+# This hybrid setup allows both modes to work, with WORKSPACE providing
+# the complete dependency graph.
+
+
+

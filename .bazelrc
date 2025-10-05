@@ -2,3 +2,26 @@ build --cxxopt='-std=c++17' --host_cxxopt='-std=c++17'
 build --cxxopt='-Wno-sign-compare'
 build --cxxopt='-Wno-narrowing'
 build --define=grpc_no_ares=true
+
+# Bzlmod configuration
+# This project supports both WORKSPACE and bzlmod (Bazel 6.0+)
+#
+# WORKSPACE mode (default):
+#   bazel build //...
+#   This uses only the WORKSPACE file and has full dependency support
+#
+# Bzlmod hybrid mode:
+#   bazel build --enable_bzlmod --enable_workspace //...
+#   This uses MODULE.bazel for core dependencies and falls back to WORKSPACE
+#   for dependencies with custom patches/builds
+#
+# Pure bzlmod mode (not fully supported yet):
+#   bazel build --enable_bzlmod --noenable_workspace //...
+#   This uses only MODULE.bazel (many dependencies not yet available)
+
+# Uncomment to enable bzlmod with workspace fallback by default:
+# common --enable_bzlmod
+# common --enable_workspace
+
+
+
