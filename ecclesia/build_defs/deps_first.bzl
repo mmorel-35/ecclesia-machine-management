@@ -291,24 +291,25 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_json"):
-        # JSON for Modern C++ version 3.9.1.
+        # JSON for Modern C++ - Updated to 3.11.3 (aligned with MODULE.bazel as nlohmann_json).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_json",
             build_file = _format_oss_path("json.BUILD", package_name),
-            sha256 = "4cf0df69731494668bdd6460ed8cb269b68de9c19ad8c27abc24cd72605b2d5b",
-            strip_prefix = "json-3.9.1",
-            urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
+            sha256 = "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d",
+            strip_prefix = "json-3.11.3",
+            urls = ["https://github.com/nlohmann/json/archive/v3.11.3.tar.gz"],
         )
 
     if not native.existing_rule("zlib"):
-        # zlib. Version 1.3.1 (aligned with MODULE.bazel).
+        # zlib - Updated to 1.3.1 (aligned with MODULE.bazel).
         # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "zlib",
             build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-            sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
-            strip_prefix = "zlib-1.2.13",
-            urls = ["https://zlib.net/fossils/zlib-1.2.13.tar.gz"],
+            sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+            strip_prefix = "zlib-1.3.1",
+            urls = ["https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz"],
         )
 
     if not native.existing_rule("ncurses"):
@@ -334,14 +335,15 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("curl"):
+        # curl - Updated to 8.11.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "curl",
             build_file = _format_oss_path("curl.BUILD", package_name),
-            sha256 = "01ae0c123dee45b01bbaef94c0bc00ed2aec89cb2ee0fd598e0d302a6b5e0a98",
-            strip_prefix = "curl-7.69.1",
+            sha256 = "c0b25e7508b1456bc5c83ad9d3fe7b9c1df1e9e03da0b07df1887efdfb45e08c",
+            strip_prefix = "curl-8.11.1",
             urls = [
-                "https://storage.googleapis.com/mirror.tensorflow.org/curl.haxx.se/download/curl-7.69.1.tar.gz",
-                "https://curl.haxx.se/download/curl-7.69.1.tar.gz",
+                "https://curl.haxx.se/download/curl-8.11.1.tar.gz",
             ],
         )
 
@@ -458,12 +460,14 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("net_zstd"):
+        # Zstd - Fast compression algorithm. Updated to 1.5.6 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "net_zstd",
             build_file = "@com_google_riegeli//third_party:net_zstd.BUILD",
-            sha256 = "b6c537b53356a3af3ca3e621457751fa9a6ba96daf3aebb3526ae0f610863532",
-            strip_prefix = "zstd-1.4.5/lib",
-            urls = ["https://github.com/facebook/zstd/archive/v1.4.5.zip"],
+            sha256 = "30f35f71c1203369dc979ecde0400ffea93c27391bfd2ac5a9715d2173d92ff7",
+            strip_prefix = "zstd-1.5.6/lib",
+            urls = ["https://github.com/facebook/zstd/archive/v1.5.6.tar.gz"],
         )
 
     if not native.existing_rule("highwayhash"):
@@ -476,12 +480,14 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("snappy"):
+        # Snappy - Compression library. Updated to 1.2.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "snappy",
             build_file = "@com_google_riegeli//third_party:snappy.BUILD",
-            sha256 = "e170ce0def2c71d0403f5cda61d6e2743373f9480124bcfcd0fa9b3299d428d9",
-            strip_prefix = "snappy-1.1.9",
-            urls = ["https://github.com/google/snappy/archive/1.1.9.zip"],
+            sha256 = "736aeb64d86566d2236ddffa2865ee5d7a822b8b06d8b7b76bb082e3b9ab4b2c",
+            strip_prefix = "snappy-1.2.1",
+            urls = ["https://github.com/google/snappy/archive/1.2.1.tar.gz"],
         )
 
     if not native.existing_rule("public_redfish_schema"):

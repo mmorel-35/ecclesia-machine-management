@@ -103,8 +103,14 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - riegeli (0.0.0-20241126-f9ae69a) - Record I/O library (now from BCR, previously git_override)
 - brotli (1.1.0) - Compression library (patch eliminated in newer version)
 - googleapis (0.0.0-20240819-fe8ba054a) - Google APIs with native proto support (replaces old 2020 commit)
+- snappy (1.2.1) - Compression library (riegeli dependency, updated)
+- zstd (1.5.6) - Fast compression algorithm (riegeli dependency, updated)
 
-**Total in MODULE.bazel: 19 dependencies migrated to bzlmod (49% coverage)**
+**System Libraries from BCR (2 dependencies):**
+- nlohmann_json (3.11.3) - JSON library for C++ (updated from 3.9.1)
+- curl (8.11.1) - HTTP client library (updated from 7.69.1)
+
+**Total in MODULE.bazel: 23 dependencies migrated to bzlmod (59% coverage)**
 
 ### Version Alignment
 
@@ -119,12 +125,16 @@ All dependencies have been updated to latest stable versions compatible with Baz
 | googletest | 1.15.2 | 1.15.2 | ✅ Exact match (updated) |
 | google_benchmark | 1.9.0 | 1.9.0 | ✅ Exact match (updated) |
 | re2 | 2024-07-02 | 2024-07-02 | ✅ Exact match (updated) |
-| zlib | 1.2.13 | 1.3.1 | ✅ Aligned |
+| zlib | 1.3.1 | 1.3.1 | ✅ Exact match (updated) |
 | grpc | 1.72.0 | 1.72.0 | ✅ Exact match (updated) |
 | boringssl | 9b7498d5 (old) | 0.0.0-20241126 | ✅ Aligned (BCR with C++17) |
 | riegeli | c04d53fb (Oct 2024) | 0.0.0-20241126 | ✅ Aligned (BCR) |
 | brotli | 68f1b90a (2021) | 1.1.0 | ✅ Aligned (BCR, patch eliminated) |
 | googleapis | 8d245ac9 (2020) | 0.0.0-20240819 | ✅ Aligned (BCR with proto support) |
+| snappy | 1.2.1 | 1.2.1 | ✅ Exact match (updated) |
+| zstd | 1.5.6 | 1.5.6 | ✅ Exact match (updated) |
+| nlohmann_json | 3.11.3 | 3.11.3 | ✅ Exact match (updated) |
+| curl | 8.11.1 | 8.11.1 | ✅ Exact match (updated) |
 
 **Behavior:**
 - **WORKSPACE-only mode** (`bazel build //...`): Uses WORKSPACE versions

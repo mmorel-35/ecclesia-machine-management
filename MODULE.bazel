@@ -103,6 +103,26 @@ bazel_dep(name = "brotli", version = "1.1.0", repo_name = "org_brotli")
 # Using latest version from BCR with proto support
 bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", repo_name = "com_google_googleapis")
 
+# ============================================================================
+# Compression Libraries (Phase 2)
+# ============================================================================
+
+# Snappy - Compression library (from BCR)
+bazel_dep(name = "snappy", version = "1.2.1")
+
+# Zstd - Fast compression algorithm (from BCR)
+bazel_dep(name = "zstd", version = "1.5.6", repo_name = "net_zstd")
+
+# ============================================================================
+# System Libraries (Phase 2)
+# ============================================================================
+
+# nlohmann_json - JSON library for C++ (from BCR)
+bazel_dep(name = "nlohmann_json", version = "3.11.3", repo_name = "com_json")
+
+# libcurl - HTTP client library (from BCR)
+bazel_dep(name = "curl", version = "8.11.1")
+
 # Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
@@ -114,6 +134,8 @@ python.toolchain(
 # ============================================================================
 # 
 # The following dependencies are now declared via bazel_dep above:
+#
+# Phase 1 - Core Bazel Rules & Networking (19 dependencies):
 #   ✓ protobuf (29.1) - Protocol Buffers
 #   ✓ abseil-cpp (20240722.0) - C++ common libraries (updated from 20230802.2)
 #   ✓ googletest (1.15.2) - C++ testing framework (updated from 1.14.0)
@@ -126,6 +148,12 @@ python.toolchain(
 #   ✓ brotli (1.1.0) - Compression library from BCR (patch eliminated)
 #   ✓ googleapis (0.0.0-20240819-fe8ba054a) - Google APIs from BCR
 #
+# Phase 2 - Compression & System Libraries (4 new dependencies):
+#   ✓ snappy (1.2.1) - Compression library (riegeli dependency)
+#   ✓ zstd (1.5.6) - Fast compression (riegeli dependency)
+#   ✓ nlohmann_json (3.11.3) - JSON library for C++
+#   ✓ curl (8.11.1) - HTTP client library
+#
 # Note: WORKSPACE versions are updated to match MODULE.bazel for consistency.
 # When bzlmod is enabled, MODULE.bazel versions take precedence.
 #
@@ -135,18 +163,17 @@ python.toolchain(
 #
 # C++ Core (remaining in WORKSPACE):
 #   - com_google_emboss (not in BCR)
-#   - com_json (nlohmann/json - needs custom BUILD)
-#
-# Analysis: Most networking dependencies are now migrated to bzlmod
 #
 # Build rules:
 #   - com_github_nelhage_rules_boost (not in BCR)
 #   - build_bazel_rules_swift (old version)
 #   - io_bazel_rules_closure (old version)
 #
-# System libraries:
+# System libraries (some migrated to bzlmod):
+#   ✓ com_json - Migrated to BCR as nlohmann_json 3.11.3
+#   ✓ curl - Migrated to BCR 8.11.1
 #   - com_github_libevent_libevent (needs custom BUILD)
-#   - ncurses, libedit, curl, jansson (need custom BUILD files)
+#   - ncurses, libedit (need custom BUILD files)
 #
 # Messaging:
 #   - libsodium (with version_h patch)
@@ -166,11 +193,11 @@ python.toolchain(
 #   - org_tensorflow (2.0.0-rc0 - complex deps)
 #   - com_google_tensorflow_serving (with visibility patch)
 #
-# Compression (some migrated to bzlmod):
+# Compression (most migrated to bzlmod):
 #   ✓ org_brotli - Migrated to BCR 1.1.0 (patch eliminated in newer version)
-#   - snappy (custom BUILD from riegeli)
+#   ✓ snappy - Migrated to BCR 1.2.1
+#   ✓ net_zstd - Migrated to BCR 1.5.6
 #   - highwayhash (custom BUILD from riegeli)
-#   - net_zstd (custom BUILD from riegeli)
 #
 # For full dependency details, see:
 #   - ecclesia/build_defs/deps_first.bzl
