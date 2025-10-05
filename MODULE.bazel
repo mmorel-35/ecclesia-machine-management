@@ -1,18 +1,40 @@
 """Ecclesia Machine Management bzlmod configuration.
 
-This MODULE.bazel provides basic bzlmod support while maintaining full 
-compatibility with the existing WORKSPACE setup.
+This MODULE.bazel enables bzlmod support for the Ecclesia project while
+maintaining full backward compatibility with WORKSPACE mode.
 
-IMPORTANT: This project has many dependencies with custom patches and build files
-that are defined in WORKSPACE (via deps_first.bzl and deps_second.bzl). 
+USAGE:
+------
+1. WORKSPACE mode (default, full compatibility):
+   bazel build //...
 
-In hybrid mode (Bazel 6+), MODULE.bazel and WORKSPACE coexist:
-- When bzlmod is DISABLED (default): Only WORKSPACE is used
-- When bzlmod is ENABLED: MODULE.bazel dependencies are available, and
-  WORKSPACE dependencies that don't conflict are also available
+2. Bzlmod hybrid mode (recommended for bzlmod):
+   bazel build --enable_bzlmod --enable_workspace //...
+   
+   This uses MODULE.bazel for available dependencies and falls back to
+   WORKSPACE for dependencies with custom patches/builds.
 
-For full functionality, we recommend continuing to use WORKSPACE mode until
-all dependencies can be migrated to bzlmod.
+3. Pure bzlmod mode (limited support):
+   bazel build --enable_bzlmod --noenable_workspace //...
+   
+   Only uses MODULE.bazel. Many dependencies not yet available without WORKSPACE.
+
+STRATEGY:
+---------
+This project has 40+ dependencies, many with:
+- Custom patches applied via patch_args
+- Custom BUILD files for external projects
+- Specific version requirements
+- Complex transitive dependency chains (TensorFlow, gRPC, etc.)
+
+For bzlmod support, we declare dependencies available in Bazel Central Registry
+(BCR) and rely on WORKSPACE for the rest via --enable_workspace flag.
+
+A full bzlmod-only migration would require:
+- Converting all patches to standalone patch files
+- Creating BUILD files for all external dependencies in the repository
+- Resolving version conflicts with BCR modules
+- Extensive testing of the complex dependency graph
 """
 
 module(
@@ -20,52 +42,91 @@ module(
     version = "1.0",
 )
 
-# Core Bazel rules available in Bazel Central Registry (BCR)
-# These provide a foundation for bzlmod-based builds
+# ============================================================================
+# Core Bazel rules from Bazel Central Registry
+# ============================================================================
 
-# Skylib - utility functions for Bazel
 bazel_dep(name = "bazel_skylib", version = "1.4.2")
-
-# Platform definitions
 bazel_dep(name = "platforms", version = "0.0.8")
-
-# C++ build rules
 bazel_dep(name = "rules_cc", version = "0.0.9")
-
-# Python support
+bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 bazel_dep(name = "rules_python", version = "0.26.0")
+bazel_dep(name = "rules_pkg", version = "0.9.1")
 
-# Configure Python toolchain
+# Python toolchain configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     python_version = "3.11",
 )
 
-# Package/distribution rules
-bazel_dep(name = "rules_pkg", version = "0.9.1")
+# ============================================================================
+# Project Dependencies
+# ============================================================================
+# 
+# The following dependencies are defined in WORKSPACE via deps_first.bzl
+# and deps_second.bzl. They will be available when using hybrid mode
+# (--enable_bzlmod --enable_workspace):
+#
+# C++ Core:
+#   - com_google_absl (20230802.2)
+#   - com_google_protobuf (3.17.0)
+#   - com_google_googletest (1.10.0)
+#   - com_github_google_benchmark (1.5.6)
+#   - com_google_emboss
+#   - com_googlesource_code_re2 (2021-06-01)
+#   - com_json
+#   - com_google_riegeli
+#
+# Networking:
+#   - boringssl (with no_array_parameter patch)
+#   - com_github_grpc_grpc (1.51.1 with 3 patches)
+#   - com_google_googleapis
+#
+# Build rules:
+#   - com_github_nelhage_rules_boost
+#   - build_bazel_rules_swift
+#   - io_bazel_rules_closure
+#
+# System libraries:
+#   - com_github_libevent_libevent
+#   - zlib (1.2.13)
+#   - ncurses
+#   - libedit
+#   - curl
+#   - jansson
+#
+# Messaging:
+#   - libsodium (with version_h patch)
+#   - zeromq (with platform_hpp patch)
+#   - cppzmq
+#
+# Python:
+#   - com_google_absl_py
+#   - six_archive
+#   - jinja2 (custom BUILD)
+#   - markupsafe (custom BUILD)
+#
+# Redfish:
+#   - redfishMockupServer (with 12 patches)
+#   - public_redfish_schema
+#
+# TensorFlow:
+#   - org_tensorflow (2.0.0-rc0)
+#   - com_google_tensorflow_serving (with visibility patch)
+#
+# Compression:
+#   - org_brotli
+#   - snappy
+#   - highwayhash
+#   - net_zstd
+#
+# For full dependency details, see:
+#   - ecclesia/build_defs/deps_first.bzl
+#   - ecclesia/build_defs/deps_second.bzl
+#
+# ============================================================================
 
-# Protocol buffers and gRPC
-bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
 
-# NOTE: The following core dependencies are intentionally NOT included here
-# because they require specific versions with custom patches in WORKSPACE:
-# - protobuf (3.17.0 vs BCR's 21.7+)
-# - abseil-cpp (20230802.2 specific version)
-# - googletest (1.10.0 vs BCR's 1.14.0+)
-# - grpc (1.51.1 with 3 custom patches)
-# - boringssl (with custom patch)
-# - And 30+ other dependencies with custom BUILD files or patches
-
-# To use these dependencies in bzlmod mode, they would need to be added
-# with archive_override or git_override directives here, but patches
-# would need to be converted to patch_files format.
-
-# For now, the recommended approach is:
-# 1. Use WORKSPACE mode (--noenable_bzlmod, the default) for full compatibility
-# 2. Use bzlmod mode (--enable_bzlmod) for testing future migration
-
-# This hybrid setup allows both modes to work, with WORKSPACE providing
-# the complete dependency graph.
 
 
 
