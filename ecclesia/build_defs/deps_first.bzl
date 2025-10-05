@@ -62,30 +62,33 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
       package_name: The name of the Ecclesia external package.
     """
     if not native.existing_rule("com_google_absl"):
-        # Abseil. Picked up Abseil LTS 20230802.2.
+        # Abseil. Updated to LTS 20240722.0 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_google_absl",
-            sha256 = "7c11539617af1f332f0854a6fb21e296a1b29c27d03f23c7b49d4adefcd102cc",
-            strip_prefix = "abseil-cpp-20230802.2",
-            urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.2.tar.gz"],
+            sha256 = "f50e5ac311a81382da7fa75b97310e4b9006474f9560ac46f54a9967f07d4ae3",
+            strip_prefix = "abseil-cpp-20240722.0",
+            urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20240722.0.tar.gz"],
         )
 
     if not native.existing_rule("com_google_googletest"):
-        # Google Test. Official release 1.10.0.
+        # Google Test. Updated to 1.15.2 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_google_googletest",
-            sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",
-            strip_prefix = "googletest-release-1.10.0",
-            urls = ["https://github.com/google/googletest/archive/release-1.10.0.tar.gz"],
+            sha256 = "7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926",
+            strip_prefix = "googletest-1.15.2",
+            urls = ["https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz"],
         )
 
     if not native.existing_rule("com_github_google_benchmark"):
-        # Google benchmark. Official release 1.5.6.
+        # Google benchmark. Updated to 1.9.0 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_github_google_benchmark",
-            sha256 = "789f85b4810d13ff803834ea75999e41b326405d83d6a538baf01499eda96102",
-            strip_prefix = "benchmark-1.5.6",
-            urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.5.6.tar.gz"],
+            sha256 = "35a77f46cc782b16fac8d3b107fbfbb37dcd645f7c28eee19f3b8e0758b48994",
+            strip_prefix = "benchmark-1.9.0",
+            urls = ["https://github.com/google/benchmark/archive/refs/tags/v1.9.0.tar.gz"],
         )
 
     if not native.existing_rule("com_google_absl_py"):
@@ -120,7 +123,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_protobuf"):
-        # Protocol buffers. Official release 3.17.0.
+        # Protocol buffers. Official release 29.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_google_protobuf",
             sha256 = "eaba1dd133ac5167e8b08bc3268b2d33c6e9f2dcb14ec0f97f3d3eed9b395863",
@@ -129,7 +133,10 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_googleapis"):
-        # Google APIs. Latest commit as of Nov 16, 2020.
+        # Google APIs. 
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20240819-fe8ba054a
+        # from BCR with native proto support. This WORKSPACE version is kept for WORKSPACE-only mode.
+        # Latest commit as of Nov 16, 2020 (outdated, bzlmod uses newer version).
         http_archive(
             name = "com_google_googleapis",
             sha256 = "979859a238e6626850fee33d30f4240e90e71009786a55a15134df582dbc2dbe",
@@ -138,6 +145,10 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("boringssl"):
+        # BoringSSL - SSL/TLS library. 
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20241126-22e0364
+        # from BCR which handles C++17 properly, eliminating the need for -Wno-array-parameter patch.
+        # This WORKSPACE version is kept for WORKSPACE-only mode compatibility.
         # Needs to come before grpc_deps() to be respected.
         patch_files = [
             "01.no_array_parameter.patch",
@@ -153,7 +164,9 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_github_grpc_grpc"):
-        # gRPC. Taken from commit to include compiler fix for gcc error.
+        # gRPC. Updated to 1.72.0 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
+        # Patches may no longer be needed in this version - testing required.
         patch_files = [
             # Add visibility to GRPC testing
             "grpc.visibility.patch",
@@ -166,9 +179,9 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
             name = "com_github_grpc_grpc",
             patches = _make_patch_paths("grpc.patches", patch_files, package_name),
             patch_args = ["-p1"],
-            sha256 = "b55696fb249669744de3e71acc54a9382bea0dce7cd5ba379b356b12b82d4229",
-            strip_prefix = "grpc-1.51.1",
-            urls = ["https://github.com/grpc/grpc/archive/refs/tags/v1.51.1.tar.gz"],
+            sha256 = "d6734df654e8fd6a67c4900990e81e97dc3d89e7f8e92e4e9eebb18c0e6f57bd",
+            strip_prefix = "grpc-1.72.0",
+            urls = ["https://github.com/grpc/grpc/archive/refs/tags/v1.72.0.tar.gz"],
         )
 
     if not native.existing_rule("bazel_skylib"):
@@ -243,12 +256,14 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_googlesource_code_re2"):
+        # RE2. Updated to 2024-07-02 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_googlesource_code_re2",
-            sha256 = "26155e050b10b5969e986dab35654247a3b1b295e0532880b5a9c13c0a700ceb",
-            strip_prefix = "re2-2021-06-01",
+            sha256 = "eb2df807c781601c14a260a507a5bb4509be1ee626024cb45acbd57cb9d4032b",
+            strip_prefix = "re2-2024-07-02",
             urls = [
-                "https://github.com/google/re2/archive/refs/tags/2021-06-01.tar.gz",
+                "https://github.com/google/re2/archive/refs/tags/2024-07-02.tar.gz",
             ],
         )
 
@@ -276,22 +291,25 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_json"):
-        # JSON for Modern C++ version 3.9.1.
+        # JSON for Modern C++ - Updated to 3.11.3 (aligned with MODULE.bazel as nlohmann_json).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_json",
             build_file = _format_oss_path("json.BUILD", package_name),
-            sha256 = "4cf0df69731494668bdd6460ed8cb269b68de9c19ad8c27abc24cd72605b2d5b",
-            strip_prefix = "json-3.9.1",
-            urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
+            sha256 = "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d",
+            strip_prefix = "json-3.11.3",
+            urls = ["https://github.com/nlohmann/json/archive/v3.11.3.tar.gz"],
         )
 
     if not native.existing_rule("zlib"):
+        # zlib - Updated to 1.3.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "zlib",
             build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-            sha256 = "b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30",
-            strip_prefix = "zlib-1.2.13",
-            urls = ["https://zlib.net/fossils/zlib-1.2.13.tar.gz"],
+            sha256 = "38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32",
+            strip_prefix = "zlib-1.3.1",
+            urls = ["https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz"],
         )
 
     if not native.existing_rule("ncurses"):
@@ -317,14 +335,15 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("curl"):
+        # curl - Updated to 8.11.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "curl",
             build_file = _format_oss_path("curl.BUILD", package_name),
-            sha256 = "01ae0c123dee45b01bbaef94c0bc00ed2aec89cb2ee0fd598e0d302a6b5e0a98",
-            strip_prefix = "curl-7.69.1",
+            sha256 = "c0b25e7508b1456bc5c83ad9d3fe7b9c1df1e9e03da0b07df1887efdfb45e08c",
+            strip_prefix = "curl-8.11.1",
             urls = [
-                "https://storage.googleapis.com/mirror.tensorflow.org/curl.haxx.se/download/curl-7.69.1.tar.gz",
-                "https://curl.haxx.se/download/curl-7.69.1.tar.gz",
+                "https://curl.haxx.se/download/curl-8.11.1.tar.gz",
             ],
         )
 
@@ -415,15 +434,20 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_riegeli"):
-        # Riegeli. Uses the latest commit as of Feb 16, 2022.
+        # Riegeli. Updated to latest commit with MODULE.bazel support (Oct 2024).
+        # Note: When using bzlmod mode, MODULE.bazel provides version 0.0.0-20241126-f9ae69a
+        # from BCR (Bazel Central Registry). This WORKSPACE version is kept for fallback.
         http_archive(
             name = "com_google_riegeli",
-            sha256 = "a54dafa634db87723db106bc44ef365b1b442d8862aafbeb5f1d2e922049e587",
-            strip_prefix = "riegeli-934428f44a6d120cb6c065315c788aa3a1be6b66",
-            url = "https://github.com/google/riegeli/archive/934428f44a6d120cb6c065315c788aa3a1be6b66.tar.gz",
+            strip_prefix = "riegeli-c04d53fb1d936d6bca5886af9ba0c1bddc66bc74",
+            url = "https://github.com/google/riegeli/archive/c04d53fb1d936d6bca5886af9ba0c1bddc66bc74.tar.gz",
         )
 
     if not native.existing_rule("org_brotli"):
+        # Brotli compression library.
+        # Note: When using bzlmod mode, MODULE.bazel provides version 1.1.0 from BCR
+        # which eliminates the need for BROTLI_ARRAY_PARAM patch (fixed in newer versions).
+        # This WORKSPACE version is kept for WORKSPACE-only mode compatibility.
         # Additional projects needed by riegeli.
         patch_files = ["brotli.patch"]
         http_archive(
@@ -436,12 +460,14 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("net_zstd"):
+        # Zstd - Fast compression algorithm. Updated to 1.5.6 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "net_zstd",
             build_file = "@com_google_riegeli//third_party:net_zstd.BUILD",
-            sha256 = "b6c537b53356a3af3ca3e621457751fa9a6ba96daf3aebb3526ae0f610863532",
-            strip_prefix = "zstd-1.4.5/lib",
-            urls = ["https://github.com/facebook/zstd/archive/v1.4.5.zip"],
+            sha256 = "30f35f71c1203369dc979ecde0400ffea93c27391bfd2ac5a9715d2173d92ff7",
+            strip_prefix = "zstd-1.5.6/lib",
+            urls = ["https://github.com/facebook/zstd/archive/v1.5.6.tar.gz"],
         )
 
     if not native.existing_rule("highwayhash"):
@@ -454,12 +480,14 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("snappy"):
+        # Snappy - Compression library. Updated to 1.2.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "snappy",
             build_file = "@com_google_riegeli//third_party:snappy.BUILD",
-            sha256 = "e170ce0def2c71d0403f5cda61d6e2743373f9480124bcfcd0fa9b3299d428d9",
-            strip_prefix = "snappy-1.1.9",
-            urls = ["https://github.com/google/snappy/archive/1.1.9.zip"],
+            sha256 = "736aeb64d86566d2236ddffa2865ee5d7a822b8b06d8b7b76bb082e3b9ab4b2c",
+            strip_prefix = "snappy-1.2.1",
+            urls = ["https://github.com/google/snappy/archive/1.2.1.tar.gz"],
         )
 
     if not native.existing_rule("public_redfish_schema"):

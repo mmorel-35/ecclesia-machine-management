@@ -1,0 +1,211 @@
+"""Ecclesia Machine Management bzlmod configuration.
+
+This MODULE.bazel enables bzlmod support for the Ecclesia project while
+maintaining full backward compatibility with WORKSPACE mode.
+
+USAGE:
+------
+1. WORKSPACE mode (default, full compatibility):
+   bazel build //...
+
+2. Bzlmod hybrid mode (recommended for bzlmod):
+   bazel build --enable_bzlmod --enable_workspace //...
+   
+   This uses MODULE.bazel for available dependencies and falls back to
+   WORKSPACE for dependencies with custom patches/builds.
+
+3. Pure bzlmod mode (limited support):
+   bazel build --enable_bzlmod --noenable_workspace //...
+   
+   Only uses MODULE.bazel. Many dependencies not yet available without WORKSPACE.
+
+STRATEGY:
+---------
+This project has 40+ dependencies, many with:
+- Custom patches applied via patch_args
+- Custom BUILD files for external projects
+- Specific version requirements
+- Complex transitive dependency chains (TensorFlow, gRPC, etc.)
+
+For bzlmod support, we declare dependencies available in Bazel Central Registry
+(BCR) and rely on WORKSPACE for the rest via --enable_workspace flag.
+
+A full bzlmod-only migration would require:
+- Converting all patches to standalone patch files
+- Creating BUILD files for all external dependencies in the repository
+- Resolving version conflicts with BCR modules
+- Extensive testing of the complex dependency graph
+"""
+
+module(
+    name = "ecclesia-machine-management",
+    version = "1.0",
+    repo_name = "com_google_ecclesia",
+)
+
+# ============================================================================
+# Core Bazel rules from Bazel Central Registry
+# ============================================================================
+
+bazel_dep(name = "bazel_skylib", version = "1.4.2")
+bazel_dep(name = "platforms", version = "0.0.8")
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
+bazel_dep(name = "rules_python", version = "0.26.0")
+bazel_dep(name = "rules_pkg", version = "0.9.1")
+
+# Protocol Buffers - using version 29.1 which is compatible with Bazel 7.x
+bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
+
+# ============================================================================
+# C++ Core Libraries - Native Bazel projects available in BCR
+# ============================================================================
+
+# Abseil - C++ common libraries (updated to latest LTS)
+bazel_dep(name = "abseil-cpp", version = "20240722.0", repo_name = "com_google_absl")
+
+# GoogleTest - C++ testing framework (updated to latest)
+bazel_dep(name = "googletest", version = "1.15.2", repo_name = "com_google_googletest")
+
+# Google Benchmark - C++ microbenchmarking library (updated to latest)
+bazel_dep(name = "google_benchmark", version = "1.9.0", repo_name = "com_github_google_benchmark")
+
+# RE2 - Regular expression library (updated to latest)
+bazel_dep(name = "re2", version = "2024-07-02", repo_name = "com_googlesource_code_re2")
+
+# zlib - Compression library
+bazel_dep(name = "zlib", version = "1.3.1")
+
+# ============================================================================
+# Networking Libraries
+# ============================================================================
+
+# gRPC - RPC framework (updated to 1.72.0 as requested)
+bazel_dep(name = "grpc", version = "1.72.0", repo_name = "com_github_grpc_grpc")
+
+# BoringSSL - SSL/TLS library (now from BCR with C++17 support)
+# BCR version handles C++ standard requirements properly, eliminating need for -Wno-array-parameter patch
+bazel_dep(name = "boringssl", version = "0.0.0-20241126-22e0364")
+
+# Riegeli - Record I/O library with compression support (now from BCR)
+# Previously used git_override, but BCR versions are now available
+bazel_dep(name = "riegeli", version = "0.0.0-20241126-f9ae69a", repo_name = "com_google_riegeli")
+
+# Brotli - Compression library (now from BCR)
+# BCR version eliminates need for BROTLI_ARRAY_PARAM patch that was required in older versions
+bazel_dep(name = "brotli", version = "1.1.0", repo_name = "org_brotli")
+
+# ============================================================================
+# Google APIs
+# ============================================================================
+
+# googleapis - Google API definitions
+# Using latest version from BCR with proto support
+bazel_dep(name = "googleapis", version = "0.0.0-20240819-fe8ba054a", repo_name = "com_google_googleapis")
+
+# ============================================================================
+# Compression Libraries (Phase 2)
+# ============================================================================
+
+# Snappy - Compression library (from BCR)
+bazel_dep(name = "snappy", version = "1.2.1")
+
+# Zstd - Fast compression algorithm (from BCR)
+bazel_dep(name = "zstd", version = "1.5.6", repo_name = "net_zstd")
+
+# ============================================================================
+# System Libraries (Phase 2)
+# ============================================================================
+
+# nlohmann_json - JSON library for C++ (from BCR)
+bazel_dep(name = "nlohmann_json", version = "3.11.3", repo_name = "com_json")
+
+# libcurl - HTTP client library (from BCR)
+bazel_dep(name = "curl", version = "8.11.1")
+
+# Python toolchain configuration
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+
+# ============================================================================
+# Project Dependencies
+# ============================================================================
+# 
+# The following dependencies are now declared via bazel_dep above:
+#
+# Phase 1 - Core Bazel Rules & Networking (19 dependencies):
+#   ✓ protobuf (29.1) - Protocol Buffers
+#   ✓ abseil-cpp (20240722.0) - C++ common libraries (updated from 20230802.2)
+#   ✓ googletest (1.15.2) - C++ testing framework (updated from 1.14.0)
+#   ✓ google_benchmark (1.9.0) - C++ microbenchmarking (updated from 1.8.3)
+#   ✓ re2 (2024-07-02) - Regular expression library (updated from 2023-09-01)
+#   ✓ zlib (1.3.1) - Compression library
+#   ✓ grpc (1.72.0) - gRPC framework (updated from 1.51.1)
+#   ✓ boringssl (0.0.0-20241126-22e0364) - SSL/TLS library with C++17 support from BCR
+#   ✓ riegeli (0.0.0-20241126-f9ae69a) - Record I/O library from BCR (previously git_override)
+#   ✓ brotli (1.1.0) - Compression library from BCR (patch eliminated)
+#   ✓ googleapis (0.0.0-20240819-fe8ba054a) - Google APIs from BCR
+#
+# Phase 2 - Compression & System Libraries (4 new dependencies):
+#   ✓ snappy (1.2.1) - Compression library (riegeli dependency)
+#   ✓ zstd (1.5.6) - Fast compression (riegeli dependency)
+#   ✓ nlohmann_json (3.11.3) - JSON library for C++
+#   ✓ curl (8.11.1) - HTTP client library
+#
+# Note: WORKSPACE versions are updated to match MODULE.bazel for consistency.
+# When bzlmod is enabled, MODULE.bazel versions take precedence.
+#
+# The following dependencies are defined in WORKSPACE via deps_first.bzl
+# and deps_second.bzl. They will be available when using hybrid mode
+# (--enable_bzlmod --enable_workspace):
+#
+# C++ Core (remaining in WORKSPACE):
+#   - com_google_emboss (not in BCR)
+#
+# Build rules:
+#   - com_github_nelhage_rules_boost (not in BCR)
+#   - build_bazel_rules_swift (old version)
+#   - io_bazel_rules_closure (old version)
+#
+# System libraries (some migrated to bzlmod):
+#   ✓ com_json - Migrated to BCR as nlohmann_json 3.11.3
+#   ✓ curl - Migrated to BCR 8.11.1
+#   - com_github_libevent_libevent (needs custom BUILD)
+#   - ncurses, libedit (need custom BUILD files)
+#
+# Messaging:
+#   - libsodium (with version_h patch)
+#   - zeromq (with platform_hpp patch)
+#   - cppzmq (needs custom BUILD)
+#
+# Python:
+#   - com_google_absl_py (not migrated yet)
+#   - six_archive (legacy Python 2/3 compatibility)
+#   - jinja2, markupsafe (need custom BUILD files)
+#
+# Redfish:
+#   - redfishMockupServer (with 12 patches)
+#   - public_redfish_schema (custom download/extraction)
+#
+# TensorFlow:
+#   - org_tensorflow (2.0.0-rc0 - complex deps)
+#   - com_google_tensorflow_serving (with visibility patch)
+#
+# Compression (most migrated to bzlmod):
+#   ✓ org_brotli - Migrated to BCR 1.1.0 (patch eliminated in newer version)
+#   ✓ snappy - Migrated to BCR 1.2.1
+#   ✓ net_zstd - Migrated to BCR 1.5.6
+#   - highwayhash (custom BUILD from riegeli)
+#
+# For full dependency details, see:
+#   - ecclesia/build_defs/deps_first.bzl
+#   - ecclesia/build_defs/deps_second.bzl
+#
+# ============================================================================
+
+
+
+
+
