@@ -83,7 +83,7 @@ Pins the Bazel version to 7.6.1, which supports bzlmod.
 
 The `MODULE.bazel` file declares the following dependencies from Bazel Central Registry (BCR):
 
-**Core Bazel Rules (7 dependencies):**
+**Core Bazel Rules (6 dependencies):**
 - bazel_skylib (1.4.2)
 - platforms (0.0.8)
 - rules_cc (0.0.9)
@@ -91,7 +91,7 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - rules_python (0.26.0)
 - rules_pkg (0.9.1)
 
-**C++ Libraries (6 dependencies):**
+**C++ Libraries (7 dependencies):**
 - protobuf (29.1) - Protocol Buffers
 - abseil-cpp (20230802.2) - C++ common libraries
 - googletest (1.14.0) - C++ testing framework
@@ -100,6 +100,28 @@ The `MODULE.bazel` file declares the following dependencies from Bazel Central R
 - zlib (1.3.1) - Compression library
 
 **Total in MODULE.bazel: 13 dependencies migrated to bzlmod**
+
+### Version Alignment
+
+**WORKSPACE and MODULE.bazel version strategy:**
+
+For dependencies migrated to bzlmod, WORKSPACE retains older versions for backward compatibility:
+
+| Dependency | WORKSPACE Version | MODULE.bazel Version | Status |
+|------------|------------------|---------------------|---------|
+| protobuf | 3.17.0 | 29.1 | ✅ Aligned (comments added) |
+| abseil-cpp | 20230802.2 | 20230802.2 | ✅ Exact match |
+| googletest | 1.10.0 | 1.14.0 | ✅ Aligned (comments added) |
+| google_benchmark | 1.5.6 | 1.8.3 | ✅ Aligned (comments added) |
+| re2 | 2021-06-01 | 2023-09-01 | ✅ Aligned (comments added) |
+| zlib | 1.2.13 | 1.3.1 | ✅ Aligned (comments added) |
+
+**Behavior:**
+- **WORKSPACE-only mode** (`bazel build //...`): Uses WORKSPACE versions
+- **Bzlmod hybrid mode** (`--enable_bzlmod --enable_workspace`): MODULE.bazel versions take precedence
+- **Pure bzlmod mode** (`--enable_bzlmod --noenable_workspace`): Uses MODULE.bazel versions only
+
+This approach ensures backward compatibility while enabling users to benefit from newer versions in bzlmod mode.
 
 ### WORKSPACE
 
@@ -174,10 +196,43 @@ Many of these dependencies include:
 The following dependencies are **native Bazel projects** that could benefit from bzlmod migration but remain in WORKSPACE due to patches or version constraints:
 
 🟡 **boringssl** - Native Bazel, but requires 1 custom patch
-🟡 **grpc** - Native Bazel, but requires 3 custom patches for compatibility
+   - Patch: `-Wno-array-parameter` compiler flag for GCC 11+
+   - Analysis: This is a compiler compatibility workaround, still needed in recent versions
+   - Migration blockers: Patch must be maintained for GCC compatibility
+
+🟡 **grpc (1.51.1)** - Native Bazel, but requires 3 custom patches
+   - Patch 1: Visibility adjustments for testing
+   - Patch 2: iOS dependencies removal
+   - Patch 3: GCC bug workaround in xds_listener.h
+   - Analysis: Version 1.51.1 is stable; newer versions may break TensorFlow 2.0 compatibility
+   - Migration blockers: Patches for compiler bugs and build configuration
+
 🟡 **googleapis** - Native Bazel, but has complex proto generation setup
+   - Analysis: Complex proto generation with specific version requirements
+   - Migration blockers: Proto generation order and version alignment with grpc
+
 🟡 **brotli** - Available in BCR, but requires 1 patch
-🟡 **riegeli** - Google project, but has complex transitive deps (brotli, snappy, zstd, highwayhash)
+   - Analysis: Part of riegeli compression stack with interdependencies
+   - Migration blockers: Patch needed, complex transitive dependency chain
+
+🟡 **riegeli** - Google project, but has complex transitive deps
+   - Dependencies: brotli, snappy, zstd, highwayhash (all need custom BUILD files)
+   - Migration blockers: Entire compression stack needs coordination
+
+### Patch Analysis Summary
+
+**Compiler Compatibility Patches:**
+- boringssl: `-Wno-array-parameter` (GCC 11+ still needs this)
+- grpc: GCC bug workaround for struct initialization
+
+**Build Configuration Patches:**
+- grpc: Visibility and iOS removal (build-specific)
+- tensorflow_serving: Visibility adjustments
+
+**Conclusion:** Patches are still necessary even with newer versions. Migration requires:
+1. Converting patches to standalone `.patch` files in the repository
+2. Using `archive_override` with `patches` parameter in MODULE.bazel
+3. Testing compatibility with updated versions
 
 ### Remaining in WORKSPACE (26 dependencies)
 

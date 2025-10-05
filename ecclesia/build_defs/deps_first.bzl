@@ -71,7 +71,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_googletest"):
-        # Google Test. Official release 1.10.0.
+        # Google Test. Official release 1.14.0 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_google_googletest",
             sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",
@@ -80,7 +81,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_github_google_benchmark"):
-        # Google benchmark. Official release 1.5.6.
+        # Google benchmark. Official release 1.8.3 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_github_google_benchmark",
             sha256 = "789f85b4810d13ff803834ea75999e41b326405d83d6a538baf01499eda96102",
@@ -120,7 +122,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_google_protobuf"):
-        # Protocol buffers. Official release 3.17.0.
+        # Protocol buffers. Official release 29.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_google_protobuf",
             sha256 = "eaba1dd133ac5167e8b08bc3268b2d33c6e9f2dcb14ec0f97f3d3eed9b395863",
@@ -243,6 +246,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("com_googlesource_code_re2"):
+        # RE2. Release 2023-09-01 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "com_googlesource_code_re2",
             sha256 = "26155e050b10b5969e986dab35654247a3b1b295e0532880b5a9c13c0a700ceb",
@@ -286,6 +291,8 @@ def ecclesia_deps_first(package_name = "com_google_ecclesia"):
         )
 
     if not native.existing_rule("zlib"):
+        # zlib. Version 1.3.1 (aligned with MODULE.bazel).
+        # Note: When using bzlmod mode, this version is overridden by MODULE.bazel.
         http_archive(
             name = "zlib",
             build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
